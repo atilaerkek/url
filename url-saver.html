@@ -6,13 +6,92 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        body { max-width: 600px; margin: 20px auto; padding: 20px; font-family: Arial; }
-        input, textarea { width: 100%; padding: 8px; margin: 5px 0; box-sizing: border-box; }
-        button { padding: 8px 15px; background: #4CAF50; color: white; border: none; cursor: pointer; }
-        .url-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        .buttons { margin-top: 10px; }
-        .icon-btn { background: none; color: #666; padding: 5px; cursor: pointer; }
-        .alert { position: fixed; top: 20px; right: 20px; padding: 15px; background: #4CAF50; color: white; border-radius: 5px; }
+        body { 
+            max-width: 800px; 
+            margin: 20px auto; 
+            padding: 20px; 
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .url-item { 
+            margin: 15px 0; 
+            padding: 15px; 
+            border: none; 
+            border-radius: 10px; 
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .url-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .url-item strong {
+            color: #2196F3;
+            font-size: 1.1em;
+            word-break: break-all;
+        }
+        .url-item p {
+            color: #666;
+            margin: 8px 0;
+        }
+        .buttons {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .icon-btn { 
+            background: #f0f0f0; 
+            color: #555; 
+            padding: 8px 12px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .icon-btn:hover {
+            background: #e0e0e0;
+            transform: scale(1.05);
+        }
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        input, textarea { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 8px 0; 
+            box-sizing: border-box;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+        button[type="submit"] {
+            padding: 12px 25px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+        button[type="submit"]:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -49,42 +128,56 @@
 
         // Verileri Göster
         function loadURLs() {
-            db.collection("links").get().then((query) => {
-                const list = document.getElementById('urlList');
-                list.innerHTML = '';
-                query.forEach((doc) => {
-                    const data = doc.data();
-                    list.innerHTML += `
-                        <div class="url-item">
-                            <strong>${data.url}</strong>
-                            ${data.aciklama ? `<p>${data.aciklama}</p>` : ''}
-                            <div class="buttons">
-                                <button class="icon-btn" onclick="copyText('${data.url}')">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                                <button class="icon-btn" onclick="deleteURL('${doc.id}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+            db.collection("links")
+                .orderBy("tarih", "desc")
+                .get()
+                .then((query) => {
+                    const list = document.getElementById('urlList');
+                    list.innerHTML = '';
+                    query.forEach((doc) => {
+                        const data = doc.data();
+                        const tarih = data.tarih ? new Date(data.tarih.toDate()).toLocaleString('tr-TR') : '';
+                        const urlText = data.url;
+                        const isURL = urlText.startsWith('http://') || urlText.startsWith('https://');
+                        
+                        list.innerHTML += `
+                            <div class="url-item">
+                                <strong>${isURL ? `<a href="${urlText}" target="_blank">${urlText}</a>` : urlText}</strong>
+                                ${data.aciklama ? `<p>${data.aciklama}</p>` : ''}
+                                <small>Eklenme: ${tarih}</small>
+                                <div class="buttons">
+                                    <button class="icon-btn" onclick="copyText('${urlText}')" title="Kopyala">
+                                        <i class="fas fa-copy"></i> Kopyala
+                                    </button>
+                                    <button class="icon-btn" onclick="deleteURL('${doc.id}')" title="Sil">
+                                        <i class="fas fa-trash"></i> Sil
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    });
                 });
-            });
         }
 
         // Yeni Kayıt Ekle
-        document.getElementById('urlForm').addEventListener('submit', (e) => {
+        document.getElementById('urlForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const url = document.getElementById('urlInput').value;
             const aciklama = document.getElementById('aciklamaInput').value;
             
-            db.collection("links").add({ 
-                url: url,
-                aciklama: aciklama 
-            });
-            
-            loadURLs();
-            e.target.reset();
+            try {
+                await db.collection("links").add({ 
+                    url: url,
+                    aciklama: aciklama,
+                    tarih: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                loadURLs();
+                e.target.reset();
+            } catch (error) {
+                alert('Kayıt eklenirken bir hata oluştu!');
+                console.error('Hata:', error);
+            }
         });
 
         // URL Sil
@@ -95,12 +188,17 @@
             }
         }
 
-        // Metni Kopyala
-        window.copyText = (text) => {
-            navigator.clipboard.writeText(text);
-            const alert = document.getElementById('alert');
-            alert.style.display = 'block';
-            setTimeout(() => alert.style.display = 'none', 2000);
+        // Metni Kopyala - Modern yaklaşım
+        window.copyText = async (text) => {
+            try {
+                await navigator.clipboard.writeText(text);
+                const alert = document.getElementById('alert');
+                alert.style.display = 'block';
+                setTimeout(() => alert.style.display = 'none', 2000);
+            } catch (err) {
+                alert('Kopyalama işlemi başarısız oldu!');
+                console.error('Kopyalama hatası:', err);
+            }
         }
 
         loadURLs();
