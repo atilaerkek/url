@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>URL Kütüphanem</title>
+    <style>
+        body { max-width: 600px; margin: 20px auto; padding: 20px; font-family: Arial; }
+        input { width: 70%; padding: 8px; }
+        button { padding: 8px 15px; }
+        .url-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>URL Kaydedici</h1>
+    
+    <form id="urlForm">
+        <input type="url" id="urlInput" placeholder="https://ornek.com" required>
+        <button type="submit">Kaydet</button>
+    </form>
+
+    <div id="urlList"></div>
+
+    <!-- Firebase Scriptleri -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        // 🔥 ADIM 3'TE KOPYALADIĞIN KODU BURAYA YAPIŞTIR (firebaseConfig kısmını) 🔥
+        const firebaseConfig = {
+            apiKey: "xxxxxxxxxxxxxxxxxxxx",
+            authDomain: "myurlsaver.firebaseapp.com",
+            projectId: "myurlsaver",
+            storageBucket: "myurlsaver.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Verileri Göster
+        function loadURLs() {
+            db.collection("urls").get().then((query) => {
+                const list = document.getElementById('urlList');
+                list.innerHTML = '';
+                query.forEach((doc) => {
+                    const url = doc.data().url;
+                    list.innerHTML += `
+                        <div class="url-item">
+                            <a href="${url}" target="_blank">${url}</a>
+                            <button onclick="deleteURL('${doc.id}')">Sil</button>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // Yeni URL Ekle
+        document.getElementById('urlForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const url = document.getElementById('urlInput').value;
+            db.collection("urls").add({ url: url });
+            loadURLs();
+            e.target.reset();
+        });
+
+        // URL Sil
+        window.deleteURL = (id) => {
+            db.collection("urls").doc(id).delete();
+            loadURLs();
+        }
+
+        loadURLs();
+    </script>
+</body>
+</html>
