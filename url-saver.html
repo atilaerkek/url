@@ -2,29 +2,39 @@
 <html>
 <head>
     <title>URL Kütüphanem</title>
+    <!-- Font Awesome Ikonlar -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         body { max-width: 600px; margin: 20px auto; padding: 20px; font-family: Arial; }
-        input { width: 70%; padding: 8px; }
-        button { padding: 8px 15px; }
-        .url-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+        input, textarea { width: 100%; padding: 8px; margin: 5px 0; box-sizing: border-box; }
+        button { padding: 8px 15px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        .url-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .buttons { margin-top: 10px; }
+        .icon-btn { background: none; color: #666; padding: 5px; cursor: pointer; }
+        .alert { position: fixed; top: 20px; right: 20px; padding: 15px; background: #4CAF50; color: white; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <h1>URL Kaydedici</h1>
+    <h1>📁 URL Kaydedici</h1>
     
     <form id="urlForm">
-        <input type="url" id="urlInput" placeholder="https://ornek.com" required>
-        <button type="submit">Kaydet</button>
+        <input type="text" id="urlInput" placeholder="URL veya Metin" required><br>
+        <textarea id="aciklamaInput" placeholder="Açıklama (isteğe bağlı)"></textarea><br>
+        <button type="submit"><i class="fas fa-save"></i> Kaydet</button>
     </form>
 
     <div id="urlList"></div>
+
+    <!-- Alert Mesajı -->
+    <div id="alert" class="alert" style="display: none;">Kopyalandı! ✅</div>
 
     <!-- Firebase Scriptleri -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
     <script>
-        // 🔥 ADIM 3'TE KOPYALADIĞIN KODU BURAYA YAPIŞTIR (firebaseConfig kısmını) 🔥
+        // 🔥 Firebase Konfigürasyonunuzu Buraya Yapıştırın 🔥
         const firebaseConfig = {
             apiKey: "xxxxxxxxxxxxxxxxxxxx",
             authDomain: "myurlsaver.firebaseapp.com",
@@ -39,34 +49,58 @@
 
         // Verileri Göster
         function loadURLs() {
-            db.collection("urls").get().then((query) => {
+            db.collection("links").get().then((query) => {
                 const list = document.getElementById('urlList');
                 list.innerHTML = '';
                 query.forEach((doc) => {
-                    const url = doc.data().url;
+                    const data = doc.data();
                     list.innerHTML += `
                         <div class="url-item">
-                            <a href="${url}" target="_blank">${url}</a>
-                            <button onclick="deleteURL('${doc.id}')">Sil</button>
+                            <strong>${data.url}</strong>
+                            ${data.aciklama ? `<p>${data.aciklama}</p>` : ''}
+                            <div class="buttons">
+                                <button class="icon-btn" onclick="copyText('${data.url}')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="icon-btn" onclick="deleteURL('${doc.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     `;
                 });
             });
         }
 
-        // Yeni URL Ekle
+        // Yeni Kayıt Ekle
         document.getElementById('urlForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const url = document.getElementById('urlInput').value;
-            db.collection("urls").add({ url: url });
+            const aciklama = document.getElementById('aciklamaInput').value;
+            
+            db.collection("links").add({ 
+                url: url,
+                aciklama: aciklama 
+            });
+            
             loadURLs();
             e.target.reset();
         });
 
         // URL Sil
         window.deleteURL = (id) => {
-            db.collection("urls").doc(id).delete();
-            loadURLs();
+            if(confirm("Silmek istediğinize emin misiniz?")) {
+                db.collection("links").doc(id).delete();
+                loadURLs();
+            }
+        }
+
+        // Metni Kopyala
+        window.copyText = (text) => {
+            navigator.clipboard.writeText(text);
+            const alert = document.getElementById('alert');
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 2000);
         }
 
         loadURLs();
