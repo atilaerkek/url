@@ -1,13 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
 <head>
-    <link rel="stylesheet" href="url-style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Kaydet</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+
+        .submit-btn {
+            background: #2196F3;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+
+        .url-container {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+
+        .url-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .url-text {
+            color: #2196F3;
+            font-size: 1.1em;
+            word-break: break-all;
+            margin-bottom: 8px;
+        }
+
+        .description-text {
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+            background: #f0f0f0;
+            color: #555;
+        }
+
+        .action-button:hover {
+            background: #e0e0e0;
+            transform: scale(1.05);
+        }
+
+        .delete-button {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .delete-button:hover {
+            background: #ffcdd2;
+        }
+
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 8px;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+    </style>
 </head>
 <body>
-    <div class="url-container">
-        <div class="url-text">{{url}}</div>
-        <div class="description-text">{{description}}</div>
-        <div class="button-container">
-            <button class="action-button" onclick="copyUrl(url)">Kopyala</button>
-            <button class="action-button delete-button" onclick="deleteUrl(index)">Sil</button>
+    <div class="container">
+        <div class="form-container">
+            <form id="urlForm">
+                <div class="input-group">
+                    <input type="text" id="urlInput" placeholder="URL veya metin girin" required>
+                </div>
+                <div class="input-group">
+                    <textarea id="aciklamaInput" placeholder="Açıklama (isteğe bağlı)" rows="3"></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Kaydet</button>
+            </form>
         </div>
+
+        <div id="urlList"></div>
     </div>
-</body> 
+
+    <div id="alert" class="alert">Kopyalandı!</div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        // Firebase yapılandırması
+        const firebaseConfig = {
+            // Firebase config bilgilerinizi buraya ekleyin
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Verileri Göster
+        function loadURLs() {
+            db.collection("links")
+                .orderBy("tarih", "desc")
+                .get()
+                .then((query) => {
+                    const list = document.getElementById('urlList');
+                    list.innerHTML = '';
+                    query.forEach((doc) => {
+                        const data = doc.data();
+                        const tarih = data.tarih ? new Date(data.tarih.toDate()).toLocaleString('tr-TR') : '';
+                        const urlText = data.url;
+                        const isURL = urlText.startsWith('http://') || urlText.startsWith('https://');
+                        
+                        list.innerHTML += `
+                            <div class="url-container">
+                                <div class="url-text">${isURL ? `<a href="${urlText}" target="_blank">${urlText}</a>` : urlText}</div>
+                                ${data.aciklama ? `<div class="description-text">${data.aciklama}</div>` : ''}
+                                <small style="color: #666; display: block; margin-bottom: 10px;">Eklenme: ${tarih}</small>
+                                <div class="button-container">
+                                    <button class="action-button" onclick="copyText('${urlText}')">
+                                        <i class="fas fa-copy"></i> Kopyala
+                                    </button>
+                                    <button class="action-button delete-button" onclick="deleteURL('${doc.id}')">
+                                        <i class="fas fa-trash"></i> Sil
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                });
+        }
+
+        // Yeni Kayıt Ekle
+        document.getElementById('urlForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('urlInput').value;
+            const aciklama = document.getElementById('aciklamaInput').value;
+            
+            try {
+                await db.collection("links").add({
+                    url: url,
+                    aciklama: aciklama,
+                    tarih: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                loadURLs();
+                e.target.reset();
+            } catch (error) {
+                alert('Kayıt eklenirken bir hata oluştu!');
+                console.error('Hata:', error);
+            }
+        });
+
+        // Metni Kopyala
+        async function copyText(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                const alert = document.getElementById('alert');
+                alert.style.display = 'block';
+                setTimeout(() => alert.style.display = 'none', 2000);
+            } catch (err) {
+                alert('Kopyalama işlemi başarısız oldu!');
+                console.error('Kopyalama hatası:', err);
+            }
+        }
+
+        // URL Sil
+        async function deleteURL(docId) {
+            if (confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
+                try {
+                    await db.collection("links").doc(docId).delete();
+                    loadURLs();
+                } catch (error) {
+                    alert('Silme işlemi başarısız oldu!');
+                    console.error('Silme hatası:', error);
+                }
+            }
+        }
+
+        // Sayfa yüklendiğinde verileri göster
+        document.addEventListener('DOMContentLoaded', loadURLs);
+    </script>
+</body>
+</html> 
