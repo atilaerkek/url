@@ -23,6 +23,40 @@
             margin: 0 auto;
         }
 
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #2196F3;
+            margin: 0;
+            font-size: 1.8em;
+        }
+
+        .home-button {
+            padding: 8px 15px;
+            background: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .home-button:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+
         .form-container {
             background: white;
             padding: 20px;
@@ -144,6 +178,12 @@
 </head>
 <body>
     <div class="container">
+        <div class="header">
+            <h1>URL Kaydedici</h1>
+            <a href="https://atilaerkek.github.io/" class="home-button">
+                <i class="fas fa-home"></i> Ana Sayfa
+            </a>
+        </div>
         <div class="form-container">
             <form id="urlForm">
                 <div class="input-group">
