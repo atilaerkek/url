@@ -102,27 +102,32 @@
         .url-container {
             background: white;
             padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-bottom: 15px;
-            transition: transform 0.2s;
-        }
-
-        .url-container:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .url-text {
-            color: #2196F3;
-            font-size: 0.9em;
             word-break: break-all;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        .url-text a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+
+        .url-text a:hover {
+            text-decoration: underline;
         }
 
         .description-text {
             color: #666;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.4;
         }
 
         .button-container {
@@ -138,14 +143,14 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            font-size: 14px;
             transition: all 0.3s;
-            background: #f0f0f0;
-            color: #555;
+            background: #e3f2fd;
+            color: #2196F3;
         }
 
         .action-button:hover {
-            background: #e0e0e0;
-            transform: scale(1.05);
+            background: #bbdefb;
         }
 
         .delete-button {
@@ -161,12 +166,11 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 15px 25px;
             background: #4CAF50;
             color: white;
-            border-radius: 8px;
+            padding: 10px 20px;
+            border-radius: 5px;
             display: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             animation: slideIn 0.3s ease-out;
         }
 
@@ -184,6 +188,7 @@
                 <i class="fas fa-home"></i> Ana Sayfa
             </a>
         </div>
+
         <div class="form-container">
             <form id="urlForm">
                 <div class="input-group">
@@ -233,9 +238,19 @@
                         const urlText = data.url;
                         const isURL = urlText.startsWith('http://') || urlText.startsWith('https://');
                         
+                        // URL'yi kısaltma fonksiyonu
+                        function truncateURL(url) {
+                            if (url.length > 50) {
+                                return url.substring(0, 47) + '...';
+                            }
+                            return url;
+                        }
+                        
                         list.innerHTML += `
                             <div class="url-container">
-                                <div class="url-text">${isURL ? `<a href="${urlText}" target="_blank">${urlText}</a>` : urlText}</div>
+                                <div class="url-text" title="${urlText}">
+                                    ${isURL ? `<a href="${urlText}" target="_blank">${truncateURL(urlText)}</a>` : truncateURL(urlText)}
+                                </div>
                                 ${data.aciklama ? `<div class="description-text">${data.aciklama}</div>` : ''}
                                 <small style="color: #666; display: block; margin-bottom: 10px;">Eklenme: ${tarih}</small>
                                 <div class="button-container">
@@ -303,4 +318,4 @@
         document.addEventListener('DOMContentLoaded', loadURLs);
     </script>
 </body>
-</html> 
+</html>
