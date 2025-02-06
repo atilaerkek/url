@@ -15,18 +15,12 @@
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
             background: #f5f5f5;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
+            padding: 20px;
         }
 
         .container {
             max-width: 800px;
             margin: 0 auto;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
         }
 
         .header {
@@ -105,63 +99,30 @@
             transform: translateY(-2px);
         }
 
-        .fixed-content {
-            flex-shrink: 0;
-        }
-
-        #urlList {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        #urlList::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        #urlList::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        #urlList::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-
-        #urlList::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
         .url-container {
             background: white;
             padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
+            border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+
+        .url-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
         .url-text {
-            word-break: break-all;
-            margin-bottom: 10px;
-            font-size: 16px;
-            line-height: 1.4;
-        }
-
-        .url-text a {
             color: #2196F3;
-            text-decoration: none;
-        }
-
-        .url-text a:hover {
-            text-decoration: underline;
+            font-size: 0.9em;
+            word-break: break-all;
+            margin-bottom: 8px;
         }
 
         .description-text {
             color: #666;
-            margin-bottom: 10px;
-            font-size: 14px;
-            line-height: 1.4;
+            margin-bottom: 12px;
         }
 
         .button-container {
@@ -177,14 +138,14 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            font-size: 14px;
             transition: all 0.3s;
-            background: #e3f2fd;
-            color: #2196F3;
+            background: #f0f0f0;
+            color: #555;
         }
 
         .action-button:hover {
-            background: #bbdefb;
+            background: #e0e0e0;
+            transform: scale(1.05);
         }
 
         .delete-button {
@@ -200,11 +161,12 @@
             position: fixed;
             top: 20px;
             right: 20px;
+            padding: 15px 25px;
             background: #4CAF50;
             color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
+            border-radius: 8px;
             display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             animation: slideIn 0.3s ease-out;
         }
 
@@ -216,25 +178,22 @@
 </head>
 <body>
     <div class="container">
-        <div class="fixed-content">
-            <div class="header">
-                <h1>URL Kaydedici</h1>
-                <a href="https://atilaerkek.github.io/" class="home-button">
-                    <i class="fas fa-home"></i> Ana Sayfa
-                </a>
-            </div>
-
-            <div class="form-container">
-                <form id="urlForm">
-                    <div class="input-group">
-                        <input type="text" id="urlInput" placeholder="URL veya metin girin" required>
-                    </div>
-                    <div class="input-group">
-                        <textarea id="aciklamaInput" placeholder="Açıklama (isteğe bağlı)" rows="3"></textarea>
-                    </div>
-                    <button type="submit" class="submit-btn">Kaydet</button>
-                </form>
-            </div>
+        <div class="header">
+            <h1>URL Kaydedici</h1>
+            <a href="https://atilaerkek.github.io/" class="home-button">
+                <i class="fas fa-home"></i> Ana Sayfa
+            </a>
+        </div>
+        <div class="form-container">
+            <form id="urlForm">
+                <div class="input-group">
+                    <input type="text" id="urlInput" placeholder="URL veya metin girin" required>
+                </div>
+                <div class="input-group">
+                    <textarea id="aciklamaInput" placeholder="Açıklama (isteğe bağlı)" rows="3"></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Kaydet</button>
+            </form>
         </div>
 
         <div id="urlList"></div>
@@ -274,19 +233,9 @@
                         const urlText = data.url;
                         const isURL = urlText.startsWith('http://') || urlText.startsWith('https://');
                         
-                        // URL'yi kısaltma fonksiyonu
-                        function truncateURL(url) {
-                            if (url.length > 50) {
-                                return url.substring(0, 47) + '...';
-                            }
-                            return url;
-                        }
-                        
                         list.innerHTML += `
                             <div class="url-container">
-                                <div class="url-text" title="${urlText}">
-                                    ${isURL ? `<a href="${urlText}" target="_blank">${truncateURL(urlText)}</a>` : truncateURL(urlText)}
-                                </div>
+                                <div class="url-text">${isURL ? `<a href="${urlText}" target="_blank">${urlText}</a>` : urlText}</div>
                                 ${data.aciklama ? `<div class="description-text">${data.aciklama}</div>` : ''}
                                 <small style="color: #666; display: block; margin-bottom: 10px;">Eklenme: ${tarih}</small>
                                 <div class="button-container">
@@ -354,4 +303,4 @@
         document.addEventListener('DOMContentLoaded', loadURLs);
     </script>
 </body>
-</html>
+</html> 
