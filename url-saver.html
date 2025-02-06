@@ -15,12 +15,18 @@
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
             background: #f5f5f5;
-            padding: 20px;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
         }
 
         .container {
             max-width: 800px;
             margin: 0 auto;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
         }
 
         .header {
@@ -97,6 +103,34 @@
         .submit-btn:hover {
             background: #1976D2;
             transform: translateY(-2px);
+        }
+
+        .fixed-content {
+            flex-shrink: 0;
+        }
+
+        #urlList {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        #urlList::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #urlList::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        #urlList::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        #urlList::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
 
         .url-container {
@@ -182,23 +216,25 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>URL Kaydedici</h1>
-            <a href="https://atilaerkek.github.io/" class="home-button">
-                <i class="fas fa-home"></i> Ana Sayfa
-            </a>
-        </div>
+        <div class="fixed-content">
+            <div class="header">
+                <h1>URL Kaydedici</h1>
+                <a href="https://atilaerkek.github.io/" class="home-button">
+                    <i class="fas fa-home"></i> Ana Sayfa
+                </a>
+            </div>
 
-        <div class="form-container">
-            <form id="urlForm">
-                <div class="input-group">
-                    <input type="text" id="urlInput" placeholder="URL veya metin girin" required>
-                </div>
-                <div class="input-group">
-                    <textarea id="aciklamaInput" placeholder="Açıklama (isteğe bağlı)" rows="3"></textarea>
-                </div>
-                <button type="submit" class="submit-btn">Kaydet</button>
-            </form>
+            <div class="form-container">
+                <form id="urlForm">
+                    <div class="input-group">
+                        <input type="text" id="urlInput" placeholder="URL veya metin girin" required>
+                    </div>
+                    <div class="input-group">
+                        <textarea id="aciklamaInput" placeholder="Açıklama (isteğe bağlı)" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Kaydet</button>
+                </form>
+            </div>
         </div>
 
         <div id="urlList"></div>
