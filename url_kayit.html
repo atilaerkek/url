@@ -1,1 +1,414 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Kaydedici - Profesyonel Liste</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333;
+            --text-muted: #5f6368;
+        }
 
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1a1a1b;
+                --card-bg: #2d2d2e;
+                --text-main: #e8eaed;
+                --text-muted: #9aa0a6;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--bg-color);
+            padding: 20px;
+            color: var(--text-main);
+            transition: background 0.3s;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px 25px;
+            background: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.6em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .home-button {
+            padding: 10px 18px;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .home-button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .form-container {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .search-container input {
+            padding-left: 40px;
+            background: var(--card-bg);
+            color: var(--text-main);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.2s;
+            background: rgba(0,0,0,0.02);
+            color: var(--text-main);
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: var(--card-bg);
+        }
+
+        .submit-btn {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: 0.3s;
+        }
+
+        #urlList {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 50px;
+        }
+
+        .url-container {
+            background: var(--card-bg);
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            cursor: grab;
+            border-left: 5px solid transparent;
+        }
+
+        .url-container:hover {
+            border-left-color: var(--primary-color);
+        }
+
+        .drag-handle {
+            color: var(--text-muted);
+            cursor: grab;
+        }
+
+        .content-area {
+            flex-grow: 1;
+        }
+
+        .url-text {
+            color: var(--primary-color);
+            font-weight: 600;
+            word-break: break-all;
+            margin-bottom: 5px;
+        }
+
+        .description-text {
+            color: var(--text-muted);
+            font-size: 0.95em;
+            margin-bottom: 12px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-button {
+            padding: 6px 12px;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .action-button:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .delete-button:hover {
+            background: #feefee;
+            color: #d93025;
+            border-color: #fad2cf;
+        }
+
+        .alert {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            background: #323232;
+            color: white;
+            border-radius: 30px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-bookmark"></i> URL Kaydedici</h1>
+            <a href="https://atilaerkek.github.io/" class="home-button">
+                <i class="fas fa-home"></i> Ana Sayfa
+            </a>
+        </div>
+
+        <div class="form-container">
+            <form id="urlForm">
+                <div class="input-group">
+                    <input type="text" id="urlInput" placeholder="URL veya metin girin..." required>
+                </div>
+                <div class="input-group">
+                    <textarea id="aciklamaInput" placeholder="Notlarınız..." rows="2"></textarea>
+                </div>
+                <button type="submit" class="submit-btn"><i class="fas fa-plus"></i> Listeye Ekle</button>
+            </form>
+        </div>
+
+        <!-- Arama Çubuğu -->
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" placeholder="Linklerinizde arayın..." onkeyup="filterURLs()">
+        </div>
+
+        <div id="urlList"></div>
+    </div>
+
+    <div id="alert" class="alert">Panoya kopyalandı!</div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBhgu-i_ccA6bZK3GGMKaLCJSsPRx6IC_Q",
+            authDomain: "myurlsaver.firebaseapp.com",
+            projectId: "myurlsaver",
+            storageBucket: "myurlsaver.firebasestorage.app",
+            messagingSenderId: "210165524766",
+            appId: "1:210165524766:web:deadeb5bf603b79736010f"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const linksRef = db.collection("links");
+
+        // Arama/Filtreleme Fonksiyonu
+        function filterURLs() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.url-container');
+            
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(searchText) ? 'flex' : 'none';
+            });
+        }
+
+        function loadURLs() {
+            linksRef.orderBy("order", "asc").get().then((query) => {
+                const list = document.getElementById('urlList');
+                list.innerHTML = '';
+
+                if (query.empty) {
+                    list.innerHTML = '<div class="empty-state">Listeniz boş.</div>';
+                    return;
+                }
+
+                query.forEach((doc) => {
+                    const data = doc.data();
+                    const urlText = data.url;
+                    const isURL = urlText.startsWith('http');
+                    
+                    const item = document.createElement('div');
+                    item.className = 'url-container';
+                    item.dataset.id = doc.id;
+                    item.innerHTML = `
+                        <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
+                        <div class="content-area">
+                            <div class="url-text">
+                                ${isURL ? `<a href="${urlText}" target="_blank" style="color:inherit;text-decoration:none;">${urlText}</a>` : urlText}
+                            </div>
+                            ${data.aciklama ? `<div class="description-text">${data.aciklama}</div>` : ''}
+                            <div class="button-container">
+                                <button class="action-button" onclick="copyText('${urlText}')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="action-button" onclick="editURL('${doc.id}', '${urlText}', '${data.aciklama || ""}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-button delete-button" onclick="deleteURL('${doc.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+                initSortable();
+            });
+        }
+
+        function initSortable() {
+            new Sortable(document.getElementById('urlList'), {
+                animation: 150,
+                handle: '.drag-handle',
+                onEnd: updateOrderInDatabase
+            });
+        }
+
+        async function updateOrderInDatabase() {
+            const items = document.querySelectorAll('.url-container');
+            const batch = db.batch();
+            items.forEach((item, index) => {
+                batch.update(linksRef.doc(item.dataset.id), { order: index });
+            });
+            await batch.commit();
+        }
+
+        // Kayıt Düzenleme
+        async function editURL(id, oldUrl, oldDesc) {
+            const newUrl = prompt("URL/Başlık güncelle:", oldUrl);
+            if (newUrl === null) return;
+            const newDesc = prompt("Açıklama güncelle:", oldDesc);
+            if (newDesc === null) return;
+
+            await linksRef.doc(id).update({
+                url: newUrl,
+                aciklama: newDesc
+            });
+            loadURLs();
+        }
+
+        document.getElementById('urlForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('urlInput').value;
+            const aciklama = document.getElementById('aciklamaInput').value;
+            const snapshot = await linksRef.get();
+            
+            await linksRef.add({
+                url: url,
+                aciklama: aciklama,
+                order: snapshot.size,
+                tarih: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            e.target.reset();
+            loadURLs();
+        });
+
+        async function copyText(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            const alert = document.getElementById('alert');
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 1500);
+        }
+
+        async function deleteURL(docId) {
+            if (confirm('Silinsin mi?')) {
+                await linksRef.doc(docId).delete();
+                loadURLs();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadURLs);
+    </script>
+</body>
+</html>
